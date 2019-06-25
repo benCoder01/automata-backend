@@ -1,0 +1,14 @@
+{
+    "pins": [
+        {
+            "name": "Bett",
+            "id": 0,
+            "pin": 2
+        },
+        {
+            "name": "Schreibtisch",
+            "id": 1,
+            "pin": 3
+        }
+    ]
+}
