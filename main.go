@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/benCoder01/automata-backend/parser"
+	"github.com/benCoder01/automata-backend/request"
 	"github.com/stianeikeland/go-rpio"
 )
 
@@ -69,6 +70,64 @@ func readIDFromURL(r *http.Request) (int, error) {
 	return id, nil
 }
 
+func generateID() int {
+	var id int
+	id = 0
+
+	searching := true
+
+	for searching {
+		for _, control := range controls {
+			if control.id == id {
+				id++
+				break
+			}
+		}
+		searching = false
+		return id
+	}
+
+	return 0
+}
+
+// getConfig will return the whole .json config
+func getConfig(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// addControl will add a new control to the slice and will update the .json file.
+func addControl(w http.ResponseWriter, r *http.Request) {
+	req, err := request.ParseAddControl(r.Body)
+
+	if err != nil {
+		// TODO: Error
+	}
+
+	var pin rpio.Pin
+	pin = rpio.Pin(req.Pin)
+	pin.Output()
+	pin.High()
+
+	// Create Control variable
+	control := Control{activated: false, name: req.Name, pin: pin, id: generateID()}
+
+	controls = append(controls, control)
+
+	// TODO: update .json file
+}
+
+// deleteControl will delete a control from the controls slice.
+// It will also upadet the config file
+func deleteControl(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// updateControl handles the route for updating a certain control.
+// Therefor it also has to update the .json file, which holds the config.
+func updateControl(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func trigger(w http.ResponseWriter, r *http.Request) {
 	id, err := readIDFromURL(r)
 
@@ -97,14 +156,20 @@ func trigger(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// send is used if you only need to send a small amount of data back to the client. For example if a request suceeded.
 func send(status int, text string, w http.ResponseWriter) {
 	w.WriteHeader(status)
 	w.Write([]byte(text))
 }
 
 func handleRequests() {
-	fmt.Println("Serving...")
 	http.HandleFunc("/activate", trigger)
+	http.HandleFunc("/add", addControl)
+	http.HandleFunc("/update", updateControl)
+	http.HandleFunc("/delete", deleteControl)
+
+	fmt.Println("Serving...")
+
 	log.Fatal(http.ListenAndServe(":3000", nil))
 }
 
