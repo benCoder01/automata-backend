@@ -67,14 +67,14 @@ func (config *Configuration) GetWithID(id int) int {
 
 // structs needed to parse from .json file.
 
-type pinInformationJSON struct {
-	name string
-	id   int
-	pin  int
+type PinInformationJSON struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+	Pin  int    `json:"pin"`
 }
 
-type configurationJSON struct {
-	pins []pinInformationJSON
+type ConfigurationJSON struct {
+	Pins []PinInformationJSON `json:"pins"`
 }
 
 // Config holds the current configuration.
@@ -90,23 +90,22 @@ func ParseFromJSON(filename string) error {
 		return err
 	}
 
-	var configJSON configurationJSON
+	var configJSON ConfigurationJSON
 	err = json.Unmarshal(res, &configJSON)
 
 	if err != nil {
 		return err
 	}
-
 	var controls []Control
 
-	for _, val := range configJSON.pins {
+	for _, val := range configJSON.Pins {
 		var pin rpio.Pin
-		pin = rpio.Pin(val.pin)
+		pin = rpio.Pin(val.Pin)
 		pin.Output()
 		pin.High()
 
 		// TODO: Validate id
-		controls = append(controls, Control{ID: val.id, Name: val.name, Activated: false, Pin: pin})
+		controls = append(controls, Control{ID: val.ID, Name: val.Name, Activated: false, Pin: pin})
 
 	}
 
