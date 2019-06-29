@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/benCoder01/automata-backend/control"
+	"github.com/benCoder01/automata-backend/handler"
 	"github.com/stianeikeland/go-rpio"
 )
 
@@ -25,10 +26,12 @@ func initialize(filename string) error {
 }
 
 func handleRequests() {
-	http.HandleFunc("/activate", trigger)
-	http.HandleFunc("/add", addControl)
-	http.HandleFunc("/update", updateControl)
-	http.HandleFunc("/delete", deleteControl)
+	// TODO: Test if http methods are correct
+	http.HandleFunc("/activate", handler.Trigger)
+	http.HandleFunc("/add", handler.AddControl)
+	http.HandleFunc("/update", handler.UpdateControl)
+	http.HandleFunc("/delete", handler.DeleteControl)
+	http.HandleFunc("/config", handler.GetConfig)
 
 	fmt.Println("Serving...")
 

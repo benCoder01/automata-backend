@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,9 +12,20 @@ import (
 	rpio "github.com/stianeikeland/go-rpio"
 )
 
-// GetConfig will return the whole .json config
+// GetConfig will return the whole .json config.
+// However it will not read the .json file but will instead return the conrol.Config variable in json format.
+// This guarantess that the program does not return old data.
+// This could happen if the user requests the config file while this file gets updated.
 func GetConfig(w http.ResponseWriter, r *http.Request) {
+	json, err := json.Marshal(control.Config)
 
+	if err != nil {
+		// TODO: Replace send in error with http.Error(...)
+		send(http.StatusInternalServerError, "Could not parse config to json.", w)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(json)
 }
 
 // AddControl will add a new control to the slice and will update the .json file.
@@ -22,6 +34,7 @@ func AddControl(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		send(http.StatusBadRequest, "Could not parse the request body.", w)
+		return
 	}
 
 	var pin rpio.Pin
@@ -44,12 +57,50 @@ func AddControl(w http.ResponseWriter, r *http.Request) {
 // DeleteControl will delete a control from the controls slice.
 // It will also upadet the config file
 func DeleteControl(w http.ResponseWriter, r *http.Request) {
+	req, err := request.ParseDeleteControl(r.Body)
+
+	if err != nil {
+		send(http.StatusBadRequest, "Could not parse the request body.", w)
+		return
+	}
+
+	config := control.GetConfig()
+
+	// Get the index of the element
+	index := config.GetWithID(req.ID)
+
+	if index == -1 {
+		send(http.StatusBadRequest, "Variable is not valid", w)
+		return
+	}
+
+	config.DeleteControl(index)
+
+	// TODO: update .json file
+	// TODO: JSON response
+	send(200, "Removed control with id "+strconv.Itoa(req.ID), w)
 
 }
 
 // UpdateControl handles the route for updating a certain control.
 // Therefor it also has to update the .json file, which holds the config.
 func UpdateControl(w http.ResponseWriter, r *http.Request) {
+	req, err := request.ParseUpdateControl(r.Body)
+
+	if err != nil {
+		send(http.StatusBadRequest, "Could not parse the request body.", w)
+		return
+	}
+	config := control.GetConfig()
+
+	// Get the index of the element
+	index := config.GetWithID(req.ID)
+
+	config.UpdateControl(index, req.Name, req.Pin)
+
+	// TODO: update .json file
+	// TODO: JSON response
+	send(200, "Updated control with id "+strconv.Itoa(req.ID)+", new name: "+req.Name+", new pin: "+strconv.Itoa(req.Pin), w)
 
 }
 

@@ -33,6 +33,26 @@ func (config *Configuration) AppendControl(control *Control) {
 	config.Controls = append(config.Controls, *control)
 }
 
+// TODO: Test index in methods DeleteControl and UpdateControl
+
+// DeleteControl will remove the control at the provided index from the controls slice.
+func (config *Configuration) DeleteControl(index int) {
+	config.Controls = append(config.Controls[:index], config.Controls[index+1:]...)
+}
+
+// UpdateControl takes a pin number and a name and overwrites the existing field values.
+func (config *Configuration) UpdateControl(index int, name string, pinNumber int) {
+	var pin rpio.Pin
+	pin = rpio.Pin(pinNumber)
+	pin.Output()
+	pin.High()
+
+	// TODO: Check if pin number has changed --> it does seem like that there is not method for this.
+
+	config.Controls[index].Name = name
+	config.Controls[index].Pin = pin
+}
+
 // GetWithID returns the index of the control object with the provided id.
 // If the object does not exist, the method returns -1.
 func (config *Configuration) GetWithID(id int) int {
@@ -85,6 +105,7 @@ func ParseFromJSON(filename string) error {
 		pin.Output()
 		pin.High()
 
+		// TODO: Validate id
 		controls = append(controls, Control{ID: val.id, Name: val.name, Activated: false, Pin: pin})
 
 	}
