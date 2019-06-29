@@ -50,8 +50,16 @@ func AddControl(w http.ResponseWriter, r *http.Request) {
 	config.AppendControl(&newControl)
 
 	// TODO: update .json file
-	// TODO: JSON response
-	send(200, "Added the new control "+newControl.Name, w)
+	json, err := json.Marshal(newControl)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json)
 }
 
 // DeleteControl will delete a control from the controls slice.
@@ -74,11 +82,19 @@ func DeleteControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config.DeleteControl(index)
+	control := config.DeleteControl(index)
 
 	// TODO: update .json file
-	// TODO: JSON response
-	send(200, "Removed control with id "+strconv.Itoa(req.ID), w)
+	json, err := json.Marshal(control)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json)
 
 }
 
@@ -96,11 +112,19 @@ func UpdateControl(w http.ResponseWriter, r *http.Request) {
 	// Get the index of the element
 	index := config.GetWithID(req.ID)
 
-	config.UpdateControl(index, req.Name, req.Pin)
+	control := config.UpdateControl(index, req.Name, req.Pin)
 
 	// TODO: update .json file
-	// TODO: JSON response
-	send(200, "Updated control with id "+strconv.Itoa(req.ID)+", new name: "+req.Name+", new pin: "+strconv.Itoa(req.Pin), w)
+	json, err := json.Marshal(control)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json)
 
 }
 

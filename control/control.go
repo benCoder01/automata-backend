@@ -36,12 +36,16 @@ func (config *Configuration) AppendControl(control *Control) {
 // TODO: Test index in methods DeleteControl and UpdateControl
 
 // DeleteControl will remove the control at the provided index from the controls slice.
-func (config *Configuration) DeleteControl(index int) {
+// It will return the deleted control
+func (config *Configuration) DeleteControl(index int) Control {
+	control := config.Controls[index]
 	config.Controls = append(config.Controls[:index], config.Controls[index+1:]...)
+	return control
 }
 
 // UpdateControl takes a pin number and a name and overwrites the existing field values.
-func (config *Configuration) UpdateControl(index int, name string, pinNumber int) {
+// It return the updated control
+func (config *Configuration) UpdateControl(index int, name string, pinNumber int) Control {
 	var pin rpio.Pin
 	pin = rpio.Pin(pinNumber)
 	pin.Output()
@@ -51,6 +55,8 @@ func (config *Configuration) UpdateControl(index int, name string, pinNumber int
 
 	config.Controls[index].Name = name
 	config.Controls[index].Pin = pin
+
+	return config.Controls[index]
 }
 
 // GetWithID returns the index of the control object with the provided id.
